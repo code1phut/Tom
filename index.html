@@ -2,102 +2,71 @@
 <html>
 <head>
     <title>Baby Tracker</title>
-    <!-- Thêm thư viện Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .event-table {
+            margin-bottom: 20px;
+        }
+        .event-table td {
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
 <body>
     <h1>Baby Tracker</h1>
-    <form id="eventForm">
+    <form id="eventForm" onsubmit="submitForm(event)">
         <label for="event">Nhập sự kiện (ví dụ: Ăn, Ngủ, Thức dậy, Đi vệ sinh)</label><br>
         <input type="text" id="event" name="event"><br><br>
-        <input type="button" value="Ghi nhận" onclick="recordEvent()">
+        <input type="submit" value="Ghi nhận">
     </form>
 
-    <h2>Các sự kiện đã ghi nhận:</h2>
-    <ul id="eventList">
-    </ul>
-    <button onclick="clearEvents()">Xóa sự kiện</button>
-
-    <!-- Thêm canvas để vẽ biểu đồ -->
-    <h2>Thống kê sự kiện theo ngày:</h2>
-    <canvas id="eventChart" width="400" height="200"></canvas>
+    <div id="eventTables"></div>
 
     <script>
-        // Lấy dữ liệu đã lưu từ localStorage khi trang được tải
-        let events = JSON.parse(localStorage.getItem('events')) || [];
-
-        // Hàm ghi nhận sự kiện
-        function recordEvent() {
+        function submitForm(event) {
+            event.preventDefault();
             let eventInput = document.getElementById("event").value;
-            let currentTime = new Date().toLocaleDateString();
-            events.push({ event: eventInput, time: currentTime });
-            saveEvents();
-            displayEvents();
-            updateChart();
-        }
+            if (!eventInput.trim()) return;
 
-        // Hàm lưu dữ liệu vào localStorage
-        function saveEvents() {
+            let currentTime = new Date().toLocaleString();
+            let eventData = { event: eventInput, time: currentTime };
+            let events = JSON.parse(localStorage.getItem('events')) || [];
+            events.push(eventData);
             localStorage.setItem('events', JSON.stringify(events));
-        }
 
-        // Hàm hiển thị sự kiện
-        function displayEvents() {
-            let eventList = document.getElementById("eventList");
-            eventList.innerHTML = "";
-            events.forEach(function(event) {
-                let li = document.createElement("li");
-                li.textContent = event.event + " - " + event.time;
-                eventList.appendChild(li);
-            });
-        }
-
-        // Hàm xóa sự kiện
-        function clearEvents() {
-            events = [];
-            saveEvents();
+            document.getElementById("event").value = "";
             displayEvents();
-            updateChart();
         }
 
-        // Hàm cập nhật biểu đồ
-        function updateChart() {
-            let eventByDate = {};
+        function displayEvents() {
+            let events = JSON.parse(localStorage.getItem('events')) || [];
+            let eventTables = document.getElementById("eventTables");
+            eventTables.innerHTML = "";
+
+            let currentDate = "";
+            let currentTable = null;
+
             events.forEach(function(event) {
-                if (!eventByDate[event.time]) {
-                    eventByDate[event.time] = 0;
+                let date = event.time.split(",")[0];
+                if (date !== currentDate) {
+                    currentTable = document.createElement("table");
+                    currentTable.classList.add("event-table");
+                    let caption = document.createElement("caption");
+                    caption.textContent = date;
+                    currentTable.appendChild(caption);
+                    eventTables.appendChild(currentTable);
+                    currentDate = date;
                 }
-                eventByDate[event.time]++;
-            });
 
-            let chartData = {
-                labels: Object.keys(eventByDate),
-                datasets: [{
-                    label: 'Số lần sự kiện xảy ra',
-                    data: Object.values(eventByDate),
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1
-                }]
-            };
-
-            let ctx = document.getElementById('eventChart').getContext('2d');
-            let myChart = new Chart(ctx, {
-                type: 'bar',
-                data: chartData,
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
+                let row = currentTable.insertRow();
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                cell1.textContent = event.event;
+                cell2.textContent = event.time;
             });
         }
 
-        // Gọi hàm hiển thị sự kiện và cập nhật biểu đồ khi trang được tải
         displayEvents();
-        updateChart();
     </script>
 </body>
 </html>
