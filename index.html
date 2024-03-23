@@ -2,6 +2,8 @@
 <html>
 <head>
     <title>Baby Tracker</title>
+    <!-- Thêm thư viện Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h1>Baby Tracker</h1>
@@ -16,16 +18,27 @@
     </ul>
     <button onclick="clearEvents()">Xóa sự kiện</button>
 
+    <!-- Thêm canvas để vẽ biểu đồ -->
+    <h2>Thống kê sự kiện theo ngày:</h2>
+    <canvas id="eventChart" width="400" height="200"></canvas>
+
     <script>
-        // Khởi tạo một mảng lưu trữ sự kiện
-        let events = [];
+        // Lấy dữ liệu đã lưu từ localStorage khi trang được tải
+        let events = JSON.parse(localStorage.getItem('events')) || [];
 
         // Hàm ghi nhận sự kiện
         function recordEvent() {
             let eventInput = document.getElementById("event").value;
-            let currentTime = new Date().toLocaleString();
+            let currentTime = new Date().toLocaleDateString();
             events.push({ event: eventInput, time: currentTime });
+            saveEvents();
             displayEvents();
+            updateChart();
+        }
+
+        // Hàm lưu dữ liệu vào localStorage
+        function saveEvents() {
+            localStorage.setItem('events', JSON.stringify(events));
         }
 
         // Hàm hiển thị sự kiện
@@ -42,8 +55,49 @@
         // Hàm xóa sự kiện
         function clearEvents() {
             events = [];
+            saveEvents();
             displayEvents();
+            updateChart();
         }
+
+        // Hàm cập nhật biểu đồ
+        function updateChart() {
+            let eventByDate = {};
+            events.forEach(function(event) {
+                if (!eventByDate[event.time]) {
+                    eventByDate[event.time] = 0;
+                }
+                eventByDate[event.time]++;
+            });
+
+            let chartData = {
+                labels: Object.keys(eventByDate),
+                datasets: [{
+                    label: 'Số lần sự kiện xảy ra',
+                    data: Object.values(eventByDate),
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            let ctx = document.getElementById('eventChart').getContext('2d');
+            let myChart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gọi hàm hiển thị sự kiện và cập nhật biểu đồ khi trang được tải
+        displayEvents();
+        updateChart();
     </script>
 </body>
 </html>
