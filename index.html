@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Baby Tracker</title>
+</head>
+<body>
+    <h1>Baby Tracker</h1>
+    <form id="eventForm">
+        <label for="event">Nhập sự kiện (ví dụ: Ăn, Ngủ, Thức dậy, Đi vệ sinh)</label><br>
+        <input type="text" id="event" name="event"><br><br>
+        <input type="button" value="Ghi nhận" onclick="recordEvent()">
+    </form>
+
+    <h2>Các sự kiện đã ghi nhận:</h2>
+    <ul id="eventList">
+    </ul>
+    <button onclick="clearEvents()">Xóa sự kiện</button>
+
+    <script>
+        // Khởi tạo một mảng lưu trữ sự kiện
+        let events = [];
+
+        // Hàm ghi nhận sự kiện
+        function recordEvent() {
+            let eventInput = document.getElementById("event").value;
+            let currentTime = new Date().toLocaleString();
+            events.push({ event: eventInput, time: currentTime });
+            displayEvents();
+        }
+
+        // Hàm hiển thị sự kiện
+        function displayEvents() {
+            let eventList = document.getElementById("eventList");
+            eventList.innerHTML = "";
+            events.forEach(function(event) {
+                let li = document.createElement("li");
+                li.textContent = event.event + " - " + event.time;
+                eventList.appendChild(li);
+            });
+        }
+
+        // Hàm xóa sự kiện
+        function clearEvents() {
+            events = [];
+            displayEvents();
+        }
+    </script>
+</body>
+</html>
